@@ -4,35 +4,59 @@ import seaborn as sns
 import statsmodels.api as sm
 import os
 
-## Data Preo ##
+## Data Prep ##
+
 # Load the datasets
-bitC_prices = pd.read_csv("Data\BTC-USD.csv")  # Ensure the path is correct
-ethC_prices = pd.read_csv("Data\ETH-USD.csv")  # Ensure the path is correct
-fed_rate = pd.read_csv("Data\FedRate_FRB_H15.csv", skiprows=5)
-
-# Convert date columns to datetime type
-# Ensure the column name matches exactly with what's in your CSV files
-bitC_prices['Date'] = pd.to_datetime(bitC_prices['Date'])
-ethC_prices['Date'] = pd.to_datetime(ethC_prices['Date'])
-fed_rate["Time Period"] = pd.to_datetime(fed_rate["Time Period"])
+bitC_prices = pd.read_csv("Data/BTC-USD.csv", parse_dates=['Date'])
+ethC_prices = pd.read_csv("Data/ETH-USD.csv", parse_dates=['Date'])
+fed_rate = pd.read_csv("Data/FedRate_FRB_H15.csv", skiprows=5, parse_dates=["Time Period"])
 fed_rate.rename(columns={'Time Period': 'Date', 'RIFSPFF_N.WW': 'FedRate'}, inplace=True)
+personal_savings = pd.read_csv("Data/Personal Saving rate.csv", parse_dates=['DATE'])  # Assuming 'Date' column exists
+personal_savings.rename(columns={'DATE':'Date'}, inplace=True)
+# Specify the renaming of columns after merging
+rename_dict = {
+    'Close_x': 'Close_Btc',
+    'Close_y': 'Close_Eth'
+}
 
-# Merge the datasets on the 'Date' column
-# First merge: Merge 'bitC_prices' and 'ethC_prices' on 'Date'
-data_merged_once = pd.merge(bitC_prices, ethC_prices, on='Date', how='inner')
-data_merged_once.rename(columns={'Close_x': 'Close_Btc'}, inplace=True)
-data_merged_once.rename(columns={'Close_y': 'Close_Eth'}, inplace=True)
+btc_dates = set(bitC_prices['Date'])
+eth_dates = set(ethC_prices['Date'])
+fed_dates = set(fed_rate['Date'])
+savings_dates = set(personal_savings['Date'])
 
-# Second merge: Merge the result of the first merge with 'fed_rate' on 'Date'
-data = pd.merge(data_merged_once, fed_rate, on='Date', how='inner')
+# Find common dates
+common_dates = btc_dates.intersection(eth_dates, fed_dates, savings_dates)
+print(f"Number of common dates: {len(common_dates)}")
 
-# Print the first few rows of the merged DataFrame
-# print(data.head())
-# print(bitC_prices.columns)
-# print(ethC_prices.columns)
 
-## Data Plotting ##
-# Bit Coin and ETH's Historical price movement data visualization
+
+# merge task
+def merge_data(dataframes, on='Date', how='inner', rename_cols=None):
+    # Initialize merged data with the first dataframe
+    merged_data = dataframes[0]
+
+    # Iterate over the remaining dataframes and merge them one by one
+    for df in dataframes[1:]:
+        merged_data = pd.merge(merged_data, df, on=on, how=how)
+
+        # Rename columns if rename_cols is specified
+        if rename_cols:
+            merged_data.rename(columns=rename_cols, inplace=True)
+
+    return merged_data
+
+
+# Merge all datasets on the 'Date' column with column renaming
+data = merge_data([bitC_prices, ethC_prices, fed_rate, personal_savings], rename_cols=rename_dict)
+
+# Check the resulting DataFrame
+print(data.head())
+
+
+
+
+## Functions ##
+# Data plotting 
 def plot_price_movements(data, col1, col2, label1='First Asset', label2='Second Asset', folder='results', filename='price_movements.png'):
     # Ensure the folder exists
     os.makedirs(folder, exist_ok=True)
@@ -98,9 +122,19 @@ def linear_regression_analysis(data, independent_col, dependent_col, plot=True, 
         plt.savefig(plot_image_path)
         plt.show()
 
+def linear_reg_plot_price_mov(independent_col, dependent_col, folder, indxDep_name):
+    linear_regression_analysis(data, independent_col,dependent_col,folder=folder,  plot_filename=f'{indxDep_name}_linear_regression.png',summary_filename= f'{indxDep_name}_regression_summary.png')
+    plot_price_movements(data, independent_col,dependent_col, label1=independent_col, label2=dependent_col, folder=folder, filename=f'{indxDep_name}_price_movements.png')
 
 
-# Example Usage
-linear_regression_analysis(data, 'Close_Btc', 'FedRate', folder='my_folder')
-plot_price_movements(data, 'Close_Btc', 'Close_Eth', label1='Bitcoin', label2='Ethereum', folder='my_folder')
+
+## Use functions
+# #Fed Rate vs BTC Price
+# linear_reg_plot_price_mov(independent_col='FedRate', dependent_col='Close_Btc', folder='my_folder', indxDep_name='FedRatexBTC')
+
+# #BTC Price vs BTC Price
+# linear_reg_plot_price_mov(independent_col='Close_Btc', dependent_col='Close_Eth', folder='my_folder', indxDep_name='BTCxETH')
+
+# #Saving Rate vs BTC Price
+# linear_reg_plot_price_mov(independent_col='Close_Btc', dependent_col='Close_Eth', folder='my_folder', indxDep_name='BTCxETH')
 
