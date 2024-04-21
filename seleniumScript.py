@@ -9,7 +9,7 @@ import csv
 import time
 
 # Variables for customization
-search_term = "ETH"  # Change this to your desired search term
+search_term = "interest hike fed"  # Change this to your desired search term
 csv_file_name = f"{search_term.lower()}_articles_cnbc.csv"  # CSV file name based on the search term
 
 # Initialize the WebDriver using webdriver_manager
@@ -22,13 +22,13 @@ base_url = f'https://www.cnbc.com/search/?query={search_term}&qsearchterm={searc
 # Navigate to the CNBC search URL
 driver.get(base_url)
 
-# Wait for the "Newest" button to be clickable and then click it
-wait = WebDriverWait(driver, 10)
-newest_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="sortdate"]')))
-newest_button.click()
+# # Wait for the "Newest" button to be clickable and then click it
+# wait = WebDriverWait(driver, 10)
+# newest_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="sortdate"]')))
+# newest_button.click()
 
-# Wait for a moment to ensure the articles are sorted
-time.sleep(5)
+# # Wait for a moment to ensure the articles are sorted
+# time.sleep(5)
 
 # Open the CSV file for writing and write the header row
 with open(csv_file_name, 'w', newline='', encoding='utf-8') as file:
