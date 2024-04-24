@@ -1,89 +1,58 @@
 import pandas as pd
 import statsmodels.api as sm
+import numpy as np
 import os
 
-def load_data(file_name, column_name, directory='Data'):
-    df = pd.read_csv(os.path.join(directory, file_name))
-    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
-    df = df.dropna(subset=['DATE'])
+def load_and_prepare_data(file_name, column_name, frequency, directory='Data', base_index=None):
+    df = pd.read_csv(os.path.join(directory, file_name), parse_dates=['DATE'])
     df.set_index('DATE', inplace=True)
-    return df.rename(columns={column_name: file_name.split('.')[0]})
+    if frequency != 'D':
+        df = df.resample('D').ffill().reindex(base_index).ffill().bfill()
+    df = df[[column_name]] if column_name in df.columns else df[[column_name + '*']]
+    df.rename(columns={column_name: f"{file_name[:-4]}_{column_name}"}, inplace=True)
+    return df
 
-def resample_data(df, freq='D'):
-    if freq == 'M':
-        freq = 'ME'
-    elif freq == 'Q':
-        freq = 'QE'
-    return df.resample(freq).last()
+data_directory = 'Data'
+btc_data = load_and_prepare_data('BTC-USD.csv', 'Close', 'D', data_directory)
+base_index = btc_data.index  # Base index from BTC data
 
-# Load BTC-USD as the dependent variable
-btc_data = load_data('BTC-USD.csv', 'Close')
-
-# Dictionary of independent variables with their file names and target columns
-variables = {
-    '^IXIC.csv': 'Close',
-    '^VIX.csv': 'Close',
-    'BOGMBASE.csv': 'BOGMBASE',
-    'CPIAUCSL.csv': 'CPIAUCSL',
-    'Crude Oil.csv': 'Price',
-    'DGS2.csv': 'DGS2',
-    'DGS5.csv': 'DGS5',
-    'DGS10.csv': 'DGS10',
-    'DGS30.csv': 'DGS30',
-    'DJI.csv': 'Close',
-    'FEDFUNDS.csv': 'FEDFUNDS',
-    'Gold.csv': 'Price',
-    'GSPC - S&P 500.csv': 'Close',
-    'UNRATE.csv': 'UNRATE',
-    'USSTHPI.csv': 'USSTHPI',
-    'WM2NS.csv': 'WM2NS'
+datasets = {
+    '^IXIC.csv': ('Close', 'D'),
+    '^VIX.csv': ('Close', 'D'),
+    'BOGMBASE.csv': ('BOGMBASE', 'M'),
+    'CPIAUCSL.csv': ('CPIAUCSL', 'M'),
+    'Crude Oil.csv': ('Price', 'D'),
+    'DGS2.csv': ('DGS2', 'D'),
+    'DGS5.csv': ('DGS5', 'D'),
+    'DGS10.csv': ('DGS10', 'D'),
+    'DGS30.csv': ('DGS30', 'D'),
+    'DJI.csv': ('Close*', 'D'),
+    'FEDFUNDS.csv': ('FEDFUNDS', 'M'),
+    'Gold.csv': ('Price', 'D'),
+    'GSPC - S&P 500.csv': ('Close*', 'D'),
+    'UNRATE.csv': ('UNRATE', 'M'),
+    'USSTHPI.csv': ('USSTHPI', 'Q'),
+    'WM2NS.csv': ('WM2NS', 'W')
 }
 
-# Load and resample each independent variable
-for file_name, column_name in variables.items():
-    df = load_data(file_name, column_name)
-    if 'monthly' in file_name.lower():
-        df = resample_data(df, 'ME')
-    elif 'quarterly' in file_name.lower():
-        df = resample_data(df, 'QE')
-    elif 'weekly' in file_name.lower():
-        df = resample_data(df, 'W')
-    btc_data = btc_data.join(df, how='left', rsuffix=f'_{file_name.split(".")[0]}')
+for file_name, (column_name, freq) in datasets.items():
+    df = load_and_prepare_data(file_name, column_name, freq, data_directory, base_index)
+    before_join = btc_data.dropna().shape[0]
+    btc_data = btc_data.join(df, how='left')
+    after_join = btc_data.dropna().shape[0]
+    print(f"After joining {file_name}: Before = {before_join}, After = {after_join}")
 
-print("Columns available in btc_data:", btc_data.columns)
-if 'Close' in btc_data.columns:
-    X = btc_data.drop('Close', axis=1)
-    X = sm.add_constant(X)  # adding a constant
-    y = btc_data['Close']
+btc_data.ffill(inplace=True)
+btc_data.dropna(inplace=True)
 
-    # Perform OLS regression
-    model = sm.OLS(y, X)
-    results = model.fit()
-
-    # Print and save the results
-    print(results.summary())
-    result_path = os.path.join('Data', 'Result', 'regression_results.csv')
-    results.summary2().tables[1].to_csv(result_path)
-    print(f'Regression results saved to {result_path}')
+if btc_data.empty:
+    print("Error: Data is empty after joining and cleaning.")
 else:
-    print("Error: 'Close' column not found in btc_data.")
+    X = btc_data.drop('BTC-USD_Close', axis=1)
+    X = sm.add_constant(X)
+    y = btc_data['BTC-USD_Close']
 
+    model = sm.OLS(y, X, missing='drop')
+    results = model.fit()
+    print(results.summary())
 
-# Prepare data for regression
-btc_data = btc_data.dropna()
-X = btc_data.drop('Close', axis=1)
-X = sm.add_constant(X)  # adding a constant
-y = btc_data['Close']
-
-# Perform OLS regression
-model = sm.OLS(y, X)
-results = model.fit()
-
-# Print the results
-print(results.summary())
-
-# Save the regression results to a CSV file
-result_path = os.path.join('Data', 'Result', 'regression_results.csv')
-results_summary = results.summary2().tables[1]
-results_summary.to_csv(result_path)
-print(f'Regression results saved to {result_path}')
