@@ -1,18 +1,20 @@
 variable,VIF
-const,58451.17
-close_^IXIC,32.77
-close_^VIX,6.04
-bogmbase_BOGMBASE,10.02
-cpiaucsl_CPIAUCSL,246.44
-price_Crude Oil,8.09
-dgs2_DGS2,992.5
-dgs5_DGS5,3697.05
-dgs10_DGS10,2808.77
-dgs30_DGS30,563.02
-close_DJI,17.99
-fedfunds_FEDFUNDS,182.0
-price_Gold,4.61
-close_GSPC - S&P 500,35.69
-unrate_UNRATE,47.33
-ussthpi_USSTHPI,64.03
-wm2ns_WM2NS,30.83
+const,59783.28
+close_ETH-USD,11.51
+close_BTC-USD,8.32
+close_^IXIC,34.88
+close_^VIX,5.96
+bogmbase_BOGMBASE,10.49
+cpiaucsl_CPIAUCSL,260.25
+price_Crude Oil,8.32
+dgs2_DGS2,1021.18
+dgs5_DGS5,3737.73
+dgs10_DGS10,2928.73
+dgs30_DGS30,575.96
+close_DJI,19.11
+fedfunds_FEDFUNDS,179.22
+price_Gold,5.23
+close_GSPC - S&P 500,37.88
+unrate_UNRATE,55.51
+ussthpi_USSTHPI,70.27
+wm2ns_WM2NS,30.77

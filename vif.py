@@ -7,6 +7,8 @@ import statsmodels.api as sm
 
 # Dictionaries for datasets
 independent_datasets = {
+    'ETH-USD.csv': 'Close',
+    'BTC-USD.csv': 'Close',
     '^IXIC.csv': 'Close',
     '^VIX.csv': 'Close',
     'BOGMBASE.csv': 'BOGMBASE',
