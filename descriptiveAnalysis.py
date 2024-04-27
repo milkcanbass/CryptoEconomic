@@ -1,31 +1,45 @@
 import pandas as pd
 import os
 
-def read_and_describe(directory):
-    files = [f for f in os.listdir(directory) if f.endswith('.csv')]
+# Dictionary mapping each dataset file name to the relevant column name for analysis
+datasets = {
+    '^IXIC.csv': 'Close',
+    '^VIX.csv': 'Close',
+    'BOGMBASE.csv': 'BOGMBASE',
+    'CPIAUCSL.csv': 'CPIAUCSL',
+    'Crude Oil.csv': 'Price',
+    'DGS2.csv': 'DGS2',
+    'DGS5.csv': 'DGS5',
+    'DGS10.csv': 'DGS10',
+    'DGS30.csv': 'DGS30',
+    'DJI.csv': 'Close*',
+    'FEDFUNDS.csv': 'FEDFUNDS',
+    'Gold.csv': 'Price',
+    'GSPC - S&P 500.csv': 'Close*',
+    'UNRATE.csv': 'UNRATE',
+    'USSTHPI.csv': 'USSTHPI',
+    'WM2NS.csv': 'WM2NS'
+}
+
+
+def read_and_describe(directory, datasets):
     all_stats = []
 
-    for file in files:
+    for file, target_col in datasets.items():
         file_path = os.path.join(directory, file)
         df = pd.read_csv(file_path)
 
         # Standardize column names: remove spaces and special characters for easier matching
         df.columns = df.columns.str.strip().str.lower().str.replace(' ', '').str.replace('.', '').str.replace('*', '').str.replace(',', '')
 
-        # Identify the data structure and select the target column for descriptive analysis
-        if 'close' in df.columns and 'adjclose' in df.columns:
-            target_col = 'close'
-        elif len(df.columns) == 2:  # Assuming the second column is the target if there are only two columns
-            target_col = df.columns[1]
-            # Convert to numeric, coercing errors
-            df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
-        elif 'price' in df.columns:
-            target_col = 'price'
-        elif 'close' in df.columns:
-            target_col = 'close'
-        else:
-            print(f"Unknown structure for {file}, skipping.")
+        # Correct target column based on dictionary mapping
+        target_col = target_col.lower().replace(' ', '').replace('.', '').replace('*', '').replace(',', '')
+        if target_col not in df.columns:
+            print(f"Target column '{target_col}' not found in {file}, skipping.")
             continue
+
+        # Convert to numeric, coercing errors
+        df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
 
         # Calculate descriptive statistics and round to 2 decimal places
         stats = df[target_col].describe().round(2)
@@ -48,11 +62,10 @@ def save_to_csv(df, directory, subfolder='Result', filename='descriptive_statist
         print(f"Descriptive statistics saved to {file_path}")
     except Exception as e:
         print(f"Failed to save the file due to: {e}")
-        print(f"Check if the file is open elsewhere or the permissions of the folder: {file_path}")
 
 directory = 'Data'
 try:
-    descriptive_stats = read_and_describe(directory)
+    descriptive_stats = read_and_describe(directory, datasets)
     if not descriptive_stats.empty:
         save_to_csv(descriptive_stats, directory)
     else:

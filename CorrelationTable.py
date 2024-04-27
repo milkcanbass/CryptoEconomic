@@ -27,7 +27,11 @@ datasets = {
     'BTC-USD.csv': 'Close'
 }
 
-data_directory = 'Data'  # Define the directory where your CSV files are stored
+data_directory = 'Data'  # Define the base directory where your CSV files are stored
+results_directory = os.path.join(data_directory, 'Result')  # Define the directory to store results
+
+# Ensure the results directory exists
+os.makedirs(results_directory, exist_ok=True)
 
 # Load and prepare data
 all_data = []
@@ -43,19 +47,18 @@ for file_name, column_name in datasets.items():
 
 # Merge using outer join and fill missing data with forward fill
 merged_data = reduce(lambda left, right: pd.merge(left, right, on='DATE', how='outer'), all_data)
-merged_data.fillna(method='ffill', inplace=True)  # Forward fill to handle NaNs
+merged_data.ffill(inplace=True)  # Use ffill directly
 
-# Calculate correlations
-correlation_matrix = merged_data.corr()
+# Calculate correlations and round to two decimal places
+correlation_matrix = merged_data.corr().round(2)
 
-# Print and save the correlation matrix
-print(correlation_matrix)
-correlation_matrix.to_csv(os.path.join(data_directory, 'correlation_matrix.csv'))
+# Save the correlation matrix to CSV and TXT files
+correlation_csv_path = os.path.join(results_directory, 'correlation_matrix.csv')
+correlation_txt_path = os.path.join(results_directory, 'correlation_matrix.txt')
+correlation_matrix.to_csv(correlation_csv_path)
+correlation_matrix.to_csv(correlation_txt_path, sep='\t')
 
-# Print the DataFrame after merging and cleaning for inspection
-print(merged_data.head())
-
-#heat map
+# Visualize the heatmap of the correlation matrix
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Matrix')
 plt.show()
