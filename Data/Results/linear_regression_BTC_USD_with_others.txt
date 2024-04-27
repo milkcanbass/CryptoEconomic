@@ -1,0 +1,43 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                  Close   R-squared:                       0.883
+Model:                            OLS   Adj. R-squared:                  0.881
+Method:                 Least Squares   F-statistic:                     521.6
+Date:                Fri, 26 Apr 2024   Prob (F-statistic):               0.00
+Time:                        19:28:56   Log-Likelihood:                -11825.
+No. Observations:                1197   AIC:                         2.369e+04
+Df Residuals:                    1179   BIC:                         2.378e+04
+Df Model:                          17                                         
+Covariance Type:            nonrobust                                         
+=========================================================================================
+                            coef    std err          t      P>|t|      [0.025      0.975]
+-----------------------------------------------------------------------------------------
+const                 -6.072e+04    3.7e+04     -1.641      0.101   -1.33e+05    1.19e+04
+Close_^IXIC               3.2963      0.941      3.503      0.000       1.450       5.142
+Close_^VIX               94.3885     63.325      1.491      0.136     -29.854     218.631
+BOGMBASE_BOGMBASE        -0.0052      0.001     -3.897      0.000      -0.008      -0.003
+CPIAUCSL_CPIAUCSL       834.5551    142.956      5.838      0.000     554.079    1115.031
+Price_Crude Oil           3.2593     29.329      0.111      0.912     -54.284      60.802
+DGS2_DGS2             -7645.3589   2290.054     -3.339      0.001   -1.21e+04   -3152.324
+DGS5_DGS5              2445.4243   5944.274      0.411      0.681   -9217.112    1.41e+04
+DGS10_DGS10            1.514e+04   6594.619      2.295      0.022    2196.503    2.81e+04
+DGS30_DGS30           -5962.0449   3447.043     -1.730      0.084   -1.27e+04     800.979
+Close_DJI                 1.3268      0.481      2.756      0.006       0.382       2.271
+FEDFUNDS_FEDFUNDS     -2198.3597    818.220     -2.687      0.007   -3803.689    -593.030
+Price_Gold               14.3133      2.652      5.397      0.000       9.110      19.517
+Close*_GSPC - S&P 500   -12.4841      6.339     -1.969      0.049     -24.922      -0.047
+UNRATE_UNRATE          1499.9478   1108.833      1.353      0.176    -675.558    3675.454
+USSTHPI_USSTHPI        -173.6566     19.631     -8.846      0.000    -212.172    -135.141
+WM2NS_WM2NS              -5.2950      1.289     -4.107      0.000      -7.824      -2.766
+Close_ETH-USD            10.1671      0.469     21.678      0.000       9.247      11.087
+==============================================================================
+Omnibus:                       99.612   Durbin-Watson:                   0.047
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              382.359
+Skew:                           0.314   Prob(JB):                     9.37e-84
+Kurtosis:                       5.697   Cond. No.                     1.56e+09
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 1.56e+09. This might indicate that there are
+strong multicollinearity or other numerical problems.

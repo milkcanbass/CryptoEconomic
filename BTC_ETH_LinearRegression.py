@@ -28,7 +28,7 @@ if not os.path.exists(result_directory):
     os.makedirs(result_directory)
 
 # File names
-files = ['BTC-USD.csv', 'BTC-USD.csv']  # Assuming two different files
+files = ['BTC-USD.csv', 'ETH-USD.csv']  # Assuming two different files
 
 # Process each file
 for file_name in files:
